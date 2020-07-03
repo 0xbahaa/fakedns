@@ -3,9 +3,13 @@
 import socketserver
 import sys
 
+# temporary fix for colored text in CMD
+# https://stackoverflow.com/a/39675059
+from os import system;system('')
+
 DNS_HEADER_LENGTH = 12
 # TODO make some DNS database with IPs connected to regexs
-IP = '192.168.1.1'
+IP = ''
 
 
 class DNSHandler(socketserver.BaseRequestHandler):
@@ -156,12 +160,19 @@ class DNSHandler(socketserver.BaseRequestHandler):
         return records
 
 if __name__ == '__main__':
-    # Minimal configuration - allow to pass IP in configuration
-    if len(sys.argv) > 1:
-        IP = sys.argv[1]
+    # User MUST provide an IP address that will be returned in the response
+    if len(sys.argv) != 2:
+        print("\033[2;37;41musage: fakedns.py <target_ip_address>\033[0m")
+        sys.exit(1)
+    
+    IP = sys.argv[1]
     host, port = '', 53
     server = socketserver.ThreadingUDPServer((host, port), DNSHandler)
-    print('\033[36mStarted DNS server.\033[39m')
+    print(
+        '\033[36mStarted DNS server' +
+        ' @ \033[1m%s\033[0m' %(IP) # print the chosen IP
+    )
+    
     try:
         server.serve_forever()
     except KeyboardInterrupt:
